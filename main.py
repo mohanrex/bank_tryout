@@ -15,6 +15,6 @@ if __name__ == "__main__":
     APP.run(
         '0.0.0.0',
         5000,
-        debug=False,
+        debug=True,
         threaded=True
     )

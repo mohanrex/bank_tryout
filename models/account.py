@@ -32,7 +32,7 @@ def get_total_balance():
 def taxation(data):
     if (
         data.get('percentile') and
-        isinstance(data.get('percentile'), float) and
+        (isinstance(data.get('percentile'), float) or isinstance(data.get('percentile'), int)) and
         data.get('percentile') <= 100 and
         data.get('percentile') >= 0
     ):
@@ -50,9 +50,9 @@ def authenticator(idx, password):
     return False
 
 def withdraw(idx, password, amount):
-    if authenticator(idx, password) and isinstance(amount, float) and amount > 0:
+    if authenticator(idx, password) and (isinstance(amount, int) or isinstance(amount, float)) and amount > 0:
         record = ACCOUNTS_DB.get_record_by_id(idx)
-        if record['values']['balance'] > amount:
+        if record['values']['balance'] >= amount:
             record['values']['balance'] = record['values']['balance'] - amount
             ACCOUNTS_DB.update_record(record['idx'], record)
             return True, None
@@ -60,15 +60,20 @@ def withdraw(idx, password, amount):
     return False, "Invalid Password or name"
 
 def filter_account(amount):
-    if isinstance(amount, float):
-        return list([record for record in get_accounts() if record['values']['balance'] < amount]), None
-    return False, "Validation Error"
-
+    return list([record for record in get_accounts() if record['values']['balance'] <= amount])
+    
 def lowest_account():
     accounts = get_accounts()
     if len(accounts) > 0:
-        lowest = min(accounts, key=lambda accounts:accounts['values']['balances'])
-        return list([account for account in accounts if account['values']['balances'] == lowest['values']['balances']])
+        lowest = min(accounts, key=lambda account:account['values']['balance'])
+        return [account['values'] for account in accounts if account['values']['balance'] == lowest['values']['balance']], None
+    return False, "Validation Error"
+
+def highest_account():
+    accounts = get_accounts()
+    if len(accounts) > 0:
+        lowest = max(accounts, key=lambda account:account['values']['balance'])
+        return [account['values'] for account in accounts if account['values']['balance'] == lowest['values']['balance']], None
     return False, "Validation Error"
 
 def update_validator(data):
@@ -76,7 +81,7 @@ def update_validator(data):
     return (
         len(data) == len(must_keys) and
         all(key in data for key in must_keys) and
-        isinstance(data.get('balance'), float)
+        (isinstance(data.get('balance'), int) or isinstance(data.get('balance'), float))
     )
 
 def validate(data):
@@ -87,7 +92,7 @@ def validate(data):
         len(data.get('name')) > 1 and
         len(str(data.get('secret'))) == 4 and
         isinstance(data.get('secret'), int) and
-        isinstance(data.get('balance'), float)
+        (isinstance(data.get('balance'), int) or isinstance(data.get('balance'), float))
     )
 
 def hasher(value):
