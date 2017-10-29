@@ -1,10 +1,9 @@
-"""
-    Tiny DB Engine Implementation
+""" Tiny DB Engine Implementation
+    Wrapper for tiny db
+    Its a inmemory db to store the values in key value pair
 """
 
-from copy import deepcopy
 from tinydb import Query, TinyDB, where
-from tinydb.storages import MemoryStorage
 
 class TinyDBEngine(object):
     "Engine for Tiny db"
@@ -31,15 +30,16 @@ class TinyDBEngine(object):
         self._tdb.update(update_attr, self._query.idx == idx)
 
     def delete_record(self, idx):
+        """ Deletes a particular record with idx
+        """
         self._tdb.remove(where('idx') == idx)
 
     def get_record_by_id(self, idx):
-        "Returns a particular row"
+        """Returns a particular row"""
         return self._tdb.get(self._query.idx == idx)
 
     def get_records(self):
-        "Returns a all row"
+        """Returns all row"""
         return self._tdb.all()
 
-ACCOUNTS_DB = TinyDBEngine(tablename="Accounts")
-SECRET_DB = TinyDBEngine(tablename="Secrets")
+ACCOUNTS_DB = TinyDBEngine(tablename="Accounts") # Accounts db object to be used anywhere
